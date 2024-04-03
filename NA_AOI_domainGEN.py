@@ -1,7 +1,7 @@
 import netCDF4 as nc
 import numpy as np
 from pyproj import Transformer
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from scipy.spatial import cKDTree
 import pandas as pd
 import sys, os
@@ -187,15 +187,27 @@ def main():
         if (name != 'lambert_conformal_conic'):
             if (variable.dimensions[-1] != 'ni'):
                 dst[name][...] = src[name][...]
-            else:
-                dst[name][...] = src[name][...,domain_idx]
-           
+
+            elif (len(variable.dimensions) == 2):
+                dst[name][...] = src[name][:,domain_idx]
+            elif (len(variable.dimensions) == 3):
+
+                for index1 in range(variable.shape[0]):
+                    # get all the source data (global)
+                    source = src[name][index1, :, :]
+                    aoi_data = source[:,domain_idx]
+                    dst[name][index1,...] =aoi_data
+                    print("finished layer: "+ str(index1))
+                
+                
         # Copy the variable attributes
         for attr_name in variable.ncattrs():
             dst[name].setncattr(attr_name, variable.getncattr(attr_name))
 
     dst.title = '1D domain for '+ AOI +', generated on ' +formatted_date + ' with ' + source_file
-       
+    
+    print('1D domain for '+ AOI +' is  generated')
+
     # Close the source netCDF file
     src.close()
 
