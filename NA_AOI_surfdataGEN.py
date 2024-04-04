@@ -1,3 +1,5 @@
+# create NA_AOI_surfdata.nc
+
 import netCDF4 as nc
 import numpy as np
 from pyproj import Transformer
@@ -25,7 +27,7 @@ def main():
         print(" <AOI_points_file>:  <AOI>_gridID.csv or <AOI>_domain.nc")
         print(" The code uses NA surfdata  to generation 1D AOI surfdata")      
         exit(0)
-
+    '''
     input_path = args[0]
     if not input_path.endswith("/"): input_path=input_path+'/'
     surfdata_file = args[1]
@@ -33,6 +35,18 @@ def main():
     if not output_path.endswith("/"): output_path=output_path+'/'
     AOI_gridID_path = args[3]
     AOI_gridID_file = args[4]
+    '''
+    input_path = '/gpfs/wolf2/cades/cli185/proj-shared/wangd/kiloCraft/NA_surfdataGEN/'
+    surfdata_file = 'surfdata.Daymet_NA.1km.1d.c240327.nc'
+    output_path = "./temp"
+    
+    AOI_gridID_path = "./AKSP_info/"
+    AOI_gridID_file = 'AKSP_gridID.csv'
+    #AOI_gridID_file = 'AKSP_domain.lnd.Daymet_NA.1km.1d.c240403.nc'
+    #AOI_gridID_file = 'AKSP_xcyc.csv'
+    #AOI_gridID_file = 'AKSP_xcyc_lcc.csv'
+
+    
     AOI=AOI_gridID_file.split("_")[0]
 
     # get the full path
@@ -43,7 +57,7 @@ def main():
         df = pd.read_csv(AOI_gridID_file, sep=",", skiprows=1, names = ['gridID'])
         #read gridIds
         AOI_points = np.array(df['gridID'])
-    elif AOI_gridID_file.endswith('domain.nc'):
+    elif 'domain' in AOI_gridID_file and AOI_gridID_file.endswith('.nc'):
         src = nc.Dataset(AOI_gridID_file, 'r')
         AOI_points = src['gridID'][:]
     else:
@@ -88,6 +102,8 @@ def main():
             #dst.dimensions['ni'].set_length(len(AOI_points))
             ni = dst.createDimension('gridcell', AOI_points.size)
 
+    count = 0 # record how may 2D layers have been processed 
+    
     # Copy the variables from the source to the target
     for name, variable in src.variables.items():
 
@@ -110,6 +126,9 @@ def main():
                 for index in range(variable.shape[0]):
                     # get all the source data (global)
                     dst[name][index,:] = src[name][index][domain_idx]
+
+                    count = count +1
+                
             if len(variable.dimensions) == 3:
                 x = dst.createVariable(name, variable.datatype, variable.dimensions[:-1]+('gridcell',))   
                 print(name, dst[name].dimensions)   
@@ -117,10 +136,22 @@ def main():
                     for index2 in range(variable.shape[1]):
                         # get all the source data (global)
                         dst[name][index1,index2,:] = src[name][index1][index2][domain_idx]
+                    print('finished layer#: ' + str(index1)    
+                    count = count + variable.shape[1]
+            
             # Copy variable attributes (except _FillValue)
             attrs = dict(src[name].__dict__)
             attrs.pop('_FillValue', None)
             dst[name].setncatts(attrs)
+
+        if count > 80:
+            dst.close()   # output the variable into a file to save memory
+
+            dst = nc.Dataset(output_file, 'a')
+
+            count = 0
+        
+        print(count)
 
     dst.title = '1D surfdata for '+ AOI +', generated on ' +formatted_date + ' with ' + source_file
        
