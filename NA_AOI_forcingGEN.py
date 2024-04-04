@@ -1,3 +1,4 @@
+
 # NA_AOI_forcingGEN for NA domain
 
 import os,sys
@@ -24,6 +25,9 @@ def AOI_forcing_save_1d(input_path, file, AOI, AOI_points, output_path):
  
     #  
     AOI_idx = np.where(np.in1d(grid_ids, AOI_points))[0]
+    
+    AOI_mask = np.isin(grid_ids, AOI_points)
+    #print(grid_ids.shape,AOI_points.shape, AOI_mask.shape)
     
     # create the new_filename
     dst_name = output_path + '/'+ AOI + '_'+file
@@ -59,30 +63,43 @@ def AOI_forcing_save_1d(input_path, file, AOI, AOI_points, output_path):
         print(name, variable.dimensions)
         
         if (name != 'lambert_conformal_conic'):
-            if variable.dimensions[-1] != 'ni' and variable.dimensions[-1] != 'gridcell':
+            if ((variable.dimensions[-1] != 'ni') and (variable.dimensions[-1] != 'gridcell')):
                 dst[name][...] = src[name][...]
-            #else:
-            #    dst[name][...] = src[name][..., AOI_idx]
+
             elif (len(variable.dimensions) == 2):
-                tmp = src[name][:,AOI_idx]
-                print(variable.dimensions, tmp.shape)
-                #dst[name][...] = src[name][:,AOI_idx]
+                dst[name][...] = src[name][:,AOI_idx]
+
             elif (len(variable.dimensions) == 3):
+                
+                d0 = variable.shape[0]
+                d1 = variable.shape[1]
+                d2 = variable.shape[2]
 
-                '''   tmp1 = src[name][i,:,:]
-                    print(variable.dimensions, tmp1.shape)                    
-                    tmp =tmp1[:,AOI_idx]
-                    print(variable.dimensions, tmp.shape)
-                    i = i+1
-                    #dst[name][...] = src[name][:,:,AOI_idx]
-                '''
+                chunk_size = 16  # Adjust this value based on your system's memory capacity and performance
+                                 #  4  320 second, 8: 205 seconds, 16: 
+                num_chunks = d0 // chunk_size + (d0 % chunk_size > 0)
+                
+                data_arr = np.empty((d0, d1, AOI_points.shape[1]))
+                
+                #print('data_arr.shape:' + str(data_arr.shape))
+                
+                for chunk in range(num_chunks):
+                    start = chunk * chunk_size
+                    end = min((chunk + 1) * chunk_size, d0)
+                    
+                    print(f"Reading source data for chunk {chunk + 1} of {num_chunks}")
+                    source_data = src[name][start:end, :, :]
+                    #print('source_data.shape:' + str(source_data.shape))
 
-                for index1 in range(variable.shape[0]):
-                    # get all the source data (global)
-                    source = src[name][index1, :, :]
-                    aoi_data = source[:,AOI_idx]
-                    dst[name][index1,...] =aoi_data
-                    print("finished layer: "+ str(index1))
+                
+                    print(f"Subsetting source data for chunk {chunk + 1} of {num_chunks}")
+                    for i in range(start, end):
+                        AOI_data = np.copy(source_data[i - start, AOI_mask])  # mask out the source data with AOI_mask  
+                        #print('data_arr[i,0,:].shape:' + str(data_arr[i, 0, :].shape) + str(AOI_data.shape))
+                        data_arr[i, :, :] = AOI_data[:]
+                
+                print("Putting back data into netcdf")
+                dst[name][...] = data_arr
            
         # Copy the variable attributes
         for attr_name in variable.ncattrs():
@@ -123,25 +140,16 @@ def main():
     if not AOI_gridID_path.endswith("/"): AOI_gridID_path=output_path+'/'
     AOI_gridID_file = args[3]
     AOI=AOI_gridID_file.split("_")[0]
-    
-    ''' -----
+
+    '''
     #input_path = '/gpfs/wolf2/cades/cli185/proj-shared/Daymet_GSWP3_4KM_TESSFA/ELMinputdata/forcing1D_TES/'
     #input_path = '/gpfs/wolf2/cades/cli185/proj-shared/Daymet_GSWP3_4KM_TESSFA/ELMinputdata/'
     input_path = '/gpfs/wolf2/cades/cli185/proj-shared/Daymet_GSWP3_4KM_TESSFA/ELMinputdata/forcing1D_TES/netcdf/1998/'
     output_path = "./temp/dir2"
     AOI_gridID_path = '/gpfs/wolf2/cades/cli185/proj-shared/Daymet_GSWP3_4KM_TESSFA/ELMinputdata/AOI_data/MOFLUX/AOI_domain1D/'
     AOI_gridID_file = 'MOF21points_domain.lnd.Daymet_GSWP3_TESSFA.4km.1d.c231120.nc'
-    
-    
-    input_path="/gpfs/wolf2/cades/cli185/proj-shared/wangd/Forcing_2014/daymet4_1d/"
-    output_path="/gpfs/wolf2/cades/cli185/proj-shared/wangd/kiloCraft/NA_domainGEN/NA_AOI_datasets/AKSP/"
-    AOI_gridID_path="/gpfs/wolf2/cades/cli185/proj-shared/wangd/kiloCraft/NA_domainGEN/"
-    #AOI_gridID_file="MOF21points_domain.lnd.Daymet_NA.1km.1d.c240327.nc"
-    AOI_gridID_file="AKSP_domain.lnd.Daymet_NA.1km.1d.c240403.nc"
-    '''
-    
     AOI=AOI_gridID_file.split("_")[0]
-    
+    '''
 
     AOI_gridID_file = AOI_gridID_path + AOI_gridID_file
     
@@ -178,7 +186,7 @@ def main():
                 # Replace 'D:aymet4' with 'Daymet_NA'
                 parts[1] = parts[1].replace('Daymet4', 'Daymet_NA')
                 var_name = parts[4]
-                period = parts[5]         
+                period = parts[5]     
                 print('processing '+ var_name + '(' + period + ') in the file ' + file )
                 # Create the corresponding subfolder in the output directory
                 new_dir = os.path.join(output_path, os.path.relpath(root, input_path))
@@ -195,4 +203,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
