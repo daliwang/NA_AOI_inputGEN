@@ -36,18 +36,22 @@ def main():
 
     args = sys.argv[1:]
     # Check the number of arguments
-    if len(sys.argv) != 4  or sys.argv[1] == '--help':  # sys.argv includes the script name as the first argument
+    if len(sys.argv) != 5  or sys.argv[1] == '--help':  # sys.argv includes the script name as the first argument
         print("Example use: python NA_AOI_domainGEN.py <input_path> <output_path> <AOI_points_file>")
         print(" <input_path>: path to the 1D source data directory")
         print(" <output_path>:  path for the 1D AOI output data directory")
+        print(" <AOI_points_path>:  path for the 1D AOI points file")
         print(" <AOI_points_file>:  <AOI>_gridID.csv or <AOI>_xcyc.csv or <AOI>_xcyc_lcc.csv")
         print(" The code uses NA domain to generation 1D AOI domain.nc")      
         exit(0)
 
     input_path = args[0]
     output_path = args[1]
-    AOI_gridcell_file = args[2]
+    AOI_path = args[2]
+    AOI_gridcell_file = args[3]
     AOI=AOI_gridcell_file.split("_")[0]
+
+    AOI_gridcell_file = AOI_path + AOI_gridcell_file
 
     if AOI_gridcell_file.endswith('gridID.csv'):
         user_option = 1
@@ -57,13 +61,13 @@ def main():
         user_option = 3
 
     # save to the 1D domain file
-    AOIdomain = str(AOI)+'_domain.lnd.Daymet_NA.1km.1d.c'+ formatted_date + '.nc'
+    AOIdomain = output_path + '/'+ str(AOI)+'/'+str(AOI)+'_domain.lnd.Daymet_NA.1km.1d.c'+ formatted_date + '.nc'
 
     # check if file exists then delete it
     if os.path.exists(AOIdomain):
         os.remove(AOIdomain)
 
-    source_file = 'domain.lnd.Daymet_NA.1km.1d.c240327.nc'
+    source_file = input_path + 'domain.lnd.Daymet_NA.1km.1d.c240327.nc'
     dst = nc.Dataset(AOIdomain, 'w', format='NETCDF4')
 
     # open the 1D domain data

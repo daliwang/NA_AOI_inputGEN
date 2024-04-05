@@ -19,7 +19,7 @@ def main():
     args = sys.argv[1:]
     # Check the number of arguments
     if len(sys.argv) != 6  or sys.argv[1] == '--help':  # sys.argv includes the script name as the first argument
-        print("Example use: python NA_AOI_surfdataGEN.py <input_path> <NA_surfdata> <output_path> <AOI_points_file>")
+        print("Example use: python NA_AOI_surfdataGEN.py <input_path> <NA_surfdata> <output_path> <AOI_file_path>  <AOI_points_file>")
         print(" <input_path>: path to the 1D surfdata source data directory")
         print(" <NA_surfdata>: 1D NA_surfdata.nc")
         print(" <output_path>:  path for the 1D AOI surface data directory")
@@ -27,7 +27,7 @@ def main():
         print(" <AOI_points_file>:  <AOI>_gridID.csv or <AOI>_domain.nc")
         print(" The code uses NA surfdata  to generation 1D AOI surfdata")      
         exit(0)
-    '''
+    
     input_path = args[0]
     if not input_path.endswith("/"): input_path=input_path+'/'
     surfdata_file = args[1]
@@ -45,7 +45,7 @@ def main():
     #AOI_gridID_file = 'AKSP_domain.lnd.Daymet_NA.1km.1d.c240403.nc'
     #AOI_gridID_file = 'AKSP_xcyc.csv'
     #AOI_gridID_file = 'AKSP_xcyc_lcc.csv'
-
+    '''
     
     AOI=AOI_gridID_file.split("_")[0]
 
@@ -64,7 +64,7 @@ def main():
         print("Error: Invalid AOI_points_file, see help.")
 
     # save to the 1D domain file
-    AOIsurfdata = output_path+str(AOI)+'_surfdata.Daymet_NA.1km.1d.c'+ formatted_date +'.nc'
+    AOIsurfdata = output_path+str(AOI)+'/'+str(AOI)+'_surfdata.Daymet_NA.1km.1d.c'+ formatted_date +'.nc'
 
     # check if file exists then delete it
     if os.path.exists(AOIsurfdata):
@@ -136,7 +136,7 @@ def main():
                     for index2 in range(variable.shape[1]):
                         # get all the source data (global)
                         dst[name][index1,index2,:] = src[name][index1][index2][domain_idx]
-                    print('finished layer#: ' + str(index1)    
+                    print('finished layer#: ' + str(index1))    
                     count = count + variable.shape[1]
             
             # Copy variable attributes (except _FillValue)

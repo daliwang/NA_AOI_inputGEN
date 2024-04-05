@@ -30,7 +30,7 @@ def AOI_forcing_save_1d(input_path, file, AOI, AOI_points, output_path):
     #print(grid_ids.shape,AOI_points.shape, AOI_mask.shape)
     
     # create the new_filename
-    dst_name = output_path + '/'+ AOI + '_'+file
+    dst_name = output_path + '/'+ AOI + '/'+file
     print ("Generating AOI file: ", dst_name)
     
     # check if file exists then delete it
@@ -124,7 +124,7 @@ def main():
     args = sys.argv[1:]
     
     if len(sys.argv) != 5  or sys.argv[1] == '--help':  # sys.argv includes the script name as the first argument
-        print("Example use: python AOI_forcingGEN.py <input_path> <output_path> <AOI_points_file>")
+        print("Example use: python AOI_forcingGEN.py <input_path> <output_path> <AOI_gridID_path> <AOI_points_file>")
         print(" <input_path>: path to the 1D source data directory")
         print(" <output_path>:  path for the 1D AOI forcing data directory")
         print(" <AOI_gridID_path>:  path to the AOI_gridID_file")
@@ -183,7 +183,7 @@ def main():
             if file.endswith('.nc'):
                 # Parse the filename into separate substrings
                 parts = file.split('.')
-                # Replace 'D:aymet4' with 'Daymet_NA'
+                # Replace 'Daymet4' with 'Daymet_NA'
                 parts[1] = parts[1].replace('Daymet4', 'Daymet_NA')
                 var_name = parts[4]
                 period = parts[5]     
