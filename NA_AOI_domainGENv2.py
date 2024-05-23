@@ -59,8 +59,8 @@ def main():
     #AOI_gridcell_file = 'MOF21points_xcyc.csv' 
     AOI=AOI_gridcell_file.split("_")[0]
     '''
-
-    AOI_gridcell_file = input_path + 'AKSP_gridID.csv'    
+    AOI=AOI_gridcell_file.split("_")[0]
+    AOI_gridcell_file = input_path + AOI_gridcell_file    
 
     if AOI_gridcell_file.endswith('gridID.csv'):
         user_option = 1
@@ -76,7 +76,7 @@ def main():
     if os.path.exists(AOIdomain):
         os.remove(AOIdomain)
 
-    source_file = 'domain.lnd.Daymet_NA.1km.1d.c240327.nc'
+    source_file = 'domain.lnd.Daymet_NA.1km.1d.nc'
     dst = nc.Dataset(AOIdomain, 'w', format='NETCDF4')
 
     # open the 1D domain data
