@@ -1,3 +1,5 @@
+# create NA_AOI_domain.nc
+
 import netCDF4 as nc
 import numpy as np
 from pyproj import Transformer
@@ -36,22 +38,29 @@ def main():
 
     args = sys.argv[1:]
     # Check the number of arguments
-    if len(sys.argv) != 5  or sys.argv[1] == '--help':  # sys.argv includes the script name as the first argument
+    if len(sys.argv) != 4  or sys.argv[1] == '--help':  # sys.argv includes the script name as the first argument
         print("Example use: python NA_AOI_domainGEN.py <input_path> <output_path> <AOI_points_file>")
         print(" <input_path>: path to the 1D source data directory")
         print(" <output_path>:  path for the 1D AOI output data directory")
-        print(" <AOI_points_path>:  path for the 1D AOI points file")
         print(" <AOI_points_file>:  <AOI>_gridID.csv or <AOI>_xcyc.csv or <AOI>_xcyc_lcc.csv")
         print(" The code uses NA domain to generation 1D AOI domain.nc")      
         exit(0)
-
+    
     input_path = args[0]
     output_path = args[1]
-    AOI_path = args[2]
-    AOI_gridcell_file = args[3]
-    AOI=AOI_gridcell_file.split("_")[0]
+    AOI_gridcell_file = args[2]
+    '''
 
-    AOI_gridcell_file = AOI_path + AOI_gridcell_file
+    input_path = "./AKSP_info/"
+    output_path = "./temp"
+    #AOI_gridcell_file = 'AKSP_gridID.csv'
+    AOI_gridcell_file = 'AKSP_xcyc.csv'
+    AOI_gridcell_file = 'AKSP_xcyc_lcc.csv'
+    #AOI_gridcell_file = 'MOF21points_xcyc.csv' 
+    AOI=AOI_gridcell_file.split("_")[0]
+    '''
+    AOI=AOI_gridcell_file.split("_")[0]
+    AOI_gridcell_file = input_path + AOI_gridcell_file    
 
     if AOI_gridcell_file.endswith('gridID.csv'):
         user_option = 1
@@ -61,13 +70,13 @@ def main():
         user_option = 3
 
     # save to the 1D domain file
-    AOIdomain = output_path + '/'+ str(AOI)+'/'+str(AOI)+'_domain.lnd.Daymet_NA.1km.1d.c'+ formatted_date + '.nc'
+    AOIdomain = str(AOI)+'_domain.lnd.Daymet_NA.1km.1d.c'+ formatted_date + '.nc'
 
     # check if file exists then delete it
     if os.path.exists(AOIdomain):
         os.remove(AOIdomain)
 
-    source_file = input_path + 'domain.lnd.Daymet_NA.1km.1d.c240327.nc'
+    source_file = 'domain.lnd.Daymet_NA.1km.1d.nc'
     dst = nc.Dataset(AOIdomain, 'w', format='NETCDF4')
 
     # open the 1D domain data
@@ -89,6 +98,9 @@ def main():
         print(NA_gridcell_list[0:5])
 
         domain_idx = np.where(np.in1d(NA_gridcell_list, AOI_points))[0]
+
+        NA_gridcell_arr = np.array(NA_gridIDs)
+        AOI_points_arr = np.array(AOI_points)
 
     if user_option == 2: # use lat lon coordinates
         #AOI_gridcell_file = AOI+'_xcyc.csv'  # user provided gridcell csv file  (xc, yc) (lon, lat)
@@ -161,9 +173,12 @@ def main():
         tree = cKDTree(NA_gridcell_arr)
         _, domain_idx = tree.query(AOI_points_arr, k=1)
 
+    AOI_mask = np.isin(NA_gridcell_arr, AOI_points_arr)
+
     #domain_idx = np.sort(domain_idx).squeeze()
 
-    print("gridID_idx", domain_idx[0:20])
+    print("gridID_idx", domain_idx.shape, domain_idx[0:20])
+    
     #if not user_option==1:
     #    np.savetxt("AOI_gridId.csv", src['gridID'][...,domain_idx], delimiter=",", fmt='%d\n')
 
@@ -191,32 +206,50 @@ def main():
         if (name != 'lambert_conformal_conic'):
             if (variable.dimensions[-1] != 'ni'):
                 dst[name][...] = src[name][...]
-
             elif (len(variable.dimensions) == 2):
                 dst[name][...] = src[name][:,domain_idx]
             elif (len(variable.dimensions) == 3):
-
-                for index1 in range(variable.shape[0]):
+                d0 = variable.shape[0]
+                d1 = variable.shape[1]
+                d2 = variable.shape[2]
+                '''for index1 in range(variable.shape[0]):
                     # get all the source data (global)
                     source = src[name][index1, :, :]
                     aoi_data = source[:,domain_idx]
                     dst[name][index1,...] =aoi_data
-                    print("finished layer: "+ str(index1))
-                
-                
-        # Copy the variable attributes
+                    print("finished layer: "+ str(index1))'''
+                print("reading source data")
+                source_data = src[name][...]
+                print("subsetting source data"+str(source_data.shape))                
+                #data_arr = np.copy(source_data[...,AOI_mask]).reshape(d0,d1,ni)   
+
+                source_data = np.reshape(source_data, (d0, d2))  # reshape source_data into (4,ni)
+                #AOI_data = np.copy(source_data[..., AOI_mask])  # mask out the source data with AOI_mask
+    
+                # put the masked result into an array of (m,1, AOI_points)
+                data_arr = np.empty((d0, d1, len(AOI_points)))
+                for i in range(d0):
+                    AOI_data = np.copy(source_data[i, domain_idx])  # mask out the source data with AOI_mask  
+                    data_arr[i, 0, :] = AOI_data[:]
+
+                print("putting back data into netcdf"+ str(data_arr.shape))
+                dst[name][...] = data_arr
+
+
+# Copy the variable attributes
         for attr_name in variable.ncattrs():
             dst[name].setncattr(attr_name, variable.getncattr(attr_name))
 
     dst.title = '1D domain for '+ AOI +', generated on ' +formatted_date + ' with ' + source_file
-    
-    print('1D domain for '+ AOI +' is  generated')
-
+       
     # Close the source netCDF file
     src.close()
 
     # Save the target netCDF file
     dst.close()
 
+    print("Domain generation has done")
+
 if __name__ == '__main__':
     main()
+

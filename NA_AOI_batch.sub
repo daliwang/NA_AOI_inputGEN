@@ -3,35 +3,68 @@
 #SBATCH -J NA_AOI_inputdataGEN
 #SBATCH -p batch_ccsi
 #SBATCH -N 1
-#SBATCH -t 20:00:00
+#SBATCH -t 24:00:00
 #SBATCH --mem=500GB
 
 
 module load python/3.11-anaconda3
 source activate /ccsopen/home/wangd/compEnv
 
-cd /gpfs/wolf2/cades/cli185/proj-shared/wangd/kiloCraft/NA_domainGEN/
+cd /gpfs/wolf2/cades/cli185/proj-shared/wangd/kiloCraft/NA_inputGEN/
 
 date
 
-#===== forcing data
+EXPID="AKSP"
+AO_points_path="/gpfs/wolf2/cades/cli185/proj-shared/wangd/kiloCraft/NA_domainGEN/"
+AOI_points_file="AKSP_xcyc_lcc.csv"
 
-export forcing_input_path="/gpfs/wolf2/cades/cli185/proj-shared/wangd/Forcing_2014/daymet4_1d/"
-export output_path="/gpfs/wolf2/cades/cli185/proj-shared/wangd/kiloCraft/NA_domainGEN/NA_AOI_datasets/MOF21points/"
-export AOI_gridID_path="/gpfs/wolf2/cades/cli185/proj-shared/wangd/kiloCraft/NA_domainGEN/"
-export AOI_gridID_file="MOF21points_domain.lnd.Daymet_NA.1km.1d.c240327.nc"
+NA_data_path="/gpfs/wolf2/cades/cli185/proj-shared/wangd/kiloCraft/Daymet_NA_1D/"
+output_path="/gpfs/wolf2/cades/cli185/proj-shared/wangd/kiloCraft/NA_AOI_data/"
 
-#python NA_AOI_forcingGEN.py $forcing_input_path $output_path $AOI_gridID_path $AOI_gridID_file
+case_data_dir="${output_path}/${EXPID}/"
 
+# check if the directory exists
+if [ -d "$case_data_dir" ]
+then
+    echo "Directory $case_data_dir exists."
+else
+    echo "Directory $case_data_dir does not exist. Creating now..."
+    mkdir $case_data_dir
+    echo "Directory created."
+fi
 
-#export output_path="/gpfs/wolf2/cades/cli185/proj-shared/wangd/kiloCraft/NA_domainGEN/temp/MOFlux_production"
-#export AOI_gridID_file="MOFlux_domain.lnd.Daymet_GSWP3_TESSFA.4km.1d.c240323.nc"
+user_option="3"
 
-#python NA_AOI_forcingGEN.py $input_path $output_path $AOI_gridID_path $AOI_gridID_file 
+#==== 1: domain data
+#==== 2: forcing data
+#==== 3: surfdata
 
-#===== surfdata generation
+case $user_option in
+  1)
+    echo "creating domain files..."
+    python NA_AOI_domainGEN.py ${NA_data_path} ${output_path} ${AO_points_path} ${AOI_points_file}
+    ;;
+  2)
+    echo "Generating forcing data..."
+    AOI_gridID_path="$case_data_dir"
+    AOI_gridID_file="${EXPID}_domain.lnd.Daymet_NA.1km.1d.c240405.nc"
 
-export surfdata_input_path="/gpfs/wolf2/cades/cli185/proj-shared/wangd/kiloCraft/NA_surfdataGEN/"
-export surfdata_file="surfdata.Daymet_NA.1km.1d.c240327.nc"
-python NA_AOI_surfdataGEN.py $surfdata_input_path $surfdata_file $output_path $AOI_gridID_path $AOI_gridID_file 
+    python NA_AOI_forcingGEN.py $NA_data_path $output_path $AOI_gridID_path $AOI_gridID_file
+
+    #output_path="/gpfs/wolf2/cades/cli185/proj-shared/wangd/kiloCraft/NA_domainGEN/temp/MOFlux_production"
+    #AOI_gridID_file="MOFlux_domain.lnd.Daymet_GSWP3_TESSFA.4km.1d.c240323.nc"
+    #python NA_AOI_forcingGEN.py $input_path $output_path $AOI_gridID_path $AOI_gridID_file 
+    ;;
+  3)
+    echo "Generating surfdata..."
+    AOI_gridID_path="$case_data_dir"
+    AOI_gridID_file="${EXPID}_domain.lnd.Daymet_NA.1km.1d.c240405.nc"
+    surfdata_file="surfdata.Daymet_NA.1km.1d.c240327.nc"
+    
+    python NA_AOI_surfdataGEN.py ${NA_data_path} ${surfdata_file} ${output_path} ${AOI_gridID_path} ${AOI_gridID_file} 
+    ;;
+  *)
+    echo "Invalid option. Please enter 1, 2, or 3."
+    ;;
+esac
 
