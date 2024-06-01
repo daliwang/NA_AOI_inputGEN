@@ -40,7 +40,7 @@ def main():
     # Check the number of arguments
     if len(sys.argv) != 4  or sys.argv[1] == '--help':  # sys.argv includes the script name as the first argument
         print("Example use: python NA_AOI_domainGEN.py <input_path> <output_path> <AOI_points_file>")
-        print(" <input_path>: path to the 1D source data directory")
+        print(" <input_path>: path to the AOI_points_file")
         print(" <output_path>:  path for the 1D AOI output data directory")
         print(" <AOI_points_file>:  <AOI>_gridID.csv or <AOI>_xcyc.csv or <AOI>_xcyc_lcc.csv")
         print(" The code uses NA domain (./domain.lnd.Daymet_NA.1km.1d.c<yymmdd>.nc) to generation 1D AOI domain.nc")      
