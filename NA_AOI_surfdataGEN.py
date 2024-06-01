@@ -128,7 +128,7 @@ def main():
                     dst[name][index,:] = src[name][index][domain_idx]
 
                     count = count +1
-                
+
             if len(variable.dimensions) == 3:
                 x = dst.createVariable(name, variable.datatype, variable.dimensions[:-1]+('gridcell',))   
                 print(name, dst[name].dimensions)   
@@ -138,7 +138,7 @@ def main():
                         dst[name][index1,index2,:] = src[name][index1][index2][domain_idx]
                     print('finished layer#: ' + str(index1))    
                     count = count + variable.shape[1]
-            
+
             # Copy variable attributes (except _FillValue)
             attrs = dict(src[name].__dict__)
             attrs.pop('_FillValue', None)
@@ -147,7 +147,7 @@ def main():
         if count > 80:
             dst.close()   # output the variable into a file to save memory
 
-            dst = nc.Dataset(output_file, 'a')
+            dst = nc.Dataset(AOIsurfdata, 'a')
 
             count = 0
         
