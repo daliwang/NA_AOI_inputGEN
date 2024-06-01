@@ -43,7 +43,7 @@ def main():
         print(" <input_path>: path to the 1D source data directory")
         print(" <output_path>:  path for the 1D AOI output data directory")
         print(" <AOI_points_file>:  <AOI>_gridID.csv or <AOI>_xcyc.csv or <AOI>_xcyc_lcc.csv")
-        print(" The code uses NA domain to generation 1D AOI domain.nc")      
+        print(" The code uses NA domain (./domain.lnd.Daymet_NA.1km.1d.c<yymmdd>.nc) to generation 1D AOI domain.nc")      
         exit(0)
     
     input_path = args[0]
@@ -62,7 +62,7 @@ def main():
     AOI=AOI_gridcell_file.split("_")[0]
     AOI_gridcell_file = input_path + AOI_gridcell_file    
 
-    if AOI_gridcell_file.endswith('gridID.csv'):
+    if 'gridID' in AOI_gridcell_file:
         user_option = 1
     if AOI_gridcell_file.endswith('xcyc.csv'):
         user_option = 2
@@ -76,7 +76,7 @@ def main():
     if os.path.exists(AOIdomain):
         os.remove(AOIdomain)
 
-    source_file = 'domain.lnd.Daymet_NA.1km.1d.nc'
+    source_file = 'domain.lnd.Daymet_NA.1km.1d.c240521.nc'
     dst = nc.Dataset(AOIdomain, 'w', format='NETCDF4')
 
     # open the 1D domain data
@@ -87,10 +87,14 @@ def main():
 
     if user_option == 1: # gridID is used directly
         #AOI_gridcell_file = AOI+'_gridID.csv'  # user provided gridcell IDs
-        df = pd.read_csv(AOI_gridcell_file, sep=",", skiprows=1, names = ['gridID'])
-        #read gridIds
-        AOI_points = list(df['gridID'])
-        #AOI_points = list(mygridIDs)
+        if AOI_gridcell_file.endswith('.csv'):
+            df = pd.read_csv(AOI_gridcell_file, sep=",", skiprows=1, names = ['gridID'])
+            #read gridIds
+       	    AOI_points = list(df['gridID'])
+        if AOI_gridcell_file.endswith('.nc'):
+            grid_src= nc.Dataset(AOI_gridcell_file, 'r', format='NETCDF4')
+            #read gridIds
+            AOI_points = list(grid_src['gridID'][0][:])
 
         # read gridIDs
         NA_gridIDs = src.variables['gridID'][:]
