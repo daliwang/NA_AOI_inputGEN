@@ -70,7 +70,7 @@ def main():
         user_option = 3
 
     # save to the 1D domain file
-    AOIdomain = str(AOI)+'_domain.lnd.Daymet_NA.1km.1d.c'+ formatted_date + '.nc'
+    AOIdomain = output_path +'/'+str(AOI)+'_domain.lnd.Daymet_NA.1km.1d.c'+ formatted_date + '.nc'
 
     # check if file exists then delete it
     if os.path.exists(AOIdomain):
