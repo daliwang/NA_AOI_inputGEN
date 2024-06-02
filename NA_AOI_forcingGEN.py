@@ -30,7 +30,7 @@ def AOI_forcing_save_1d(input_path, file, AOI, AOI_points, output_path):
     #print(grid_ids.shape,AOI_points.shape, AOI_mask.shape)
     
     # create the new_filename
-    dst_name = output_path + '/'+ AOI + '/'+file
+    dst_name = output_path + '/'+ AOI + '_'+file
     print ("Generating AOI file: ", dst_name)
     
     # check if file exists then delete it
