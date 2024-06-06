@@ -1,22 +1,25 @@
 #!/bin/bash
 
-export kiloCraft='/gpfs/wolf2/cades/cli185/proj-shared/wangd/kiloCraft/'
+#kiloCraft=/gpfs/wolf2/cades/cli185/proj-shared/wangd/kiloCraft/
 
-export NA_inputGEN_path=${kiloCraft}/NA_inputGEN/
+#NA_inputGEN_path=${kiloCraft}/NA_inputGEN/
 
-export NA_domain_path=${kiloCraft}/Daymet_NA_1D/
+#NA_domain_path=${kiloCraft}/Daymet_NA_1D/
 
-export NA_domain="domain.lnd.Daymet_NA.1km.1d.c240521.nc"
+#NA_domain=domain.lnd.Daymet_NA.1km.1d.c240521.nc
 
-export output_path=${kiloCraft}/NA_cases_data/NADaymet1M/domain_surfdata/
+#AOI_case_name=NApoint5
 
-export AOI_case_name='NADaymet1M'
+output_path=${kiloCraft}/NA_cases_data/${AOI_case_name}/domain_surfdata/
+
+mkdir ${output_path}
 
 # create gridIDs 
-
-cd ${NA_inputGEN_path} 
+# NADaymet_subdomain.py in the NA_inputGEN contains the scirpt for 1M gridcell case
+# we need to copy it to the current directory and change the start/end gridIDs
+# for the 3M case (1,000,000:4,000,000)
 
 echo ${NA_domain_path}  ${output_path}  ${AOI_case_name}
 
-python3 NADaymet_subdomain.py  ${NA_domain_path}  ${output_path}  ${AOI_case_name}
+python3 ${AOI_case_name}_subdomain.py ${NA_domain_path}  ${output_path}  ${AOI_case_name}
 

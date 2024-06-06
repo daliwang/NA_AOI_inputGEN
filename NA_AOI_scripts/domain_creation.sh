@@ -2,16 +2,16 @@
 
 #!/bin/bash
 
-kiloCraft='/gpfs/wolf2/cades/cli185/proj-shared/wangd/kiloCraft/'
+#kiloCraft='/gpfs/wolf2/cades/cli185/proj-shared/wangd/kiloCraft/'
 
-NA_inputGEN_path=${kiloCraft}/NA_inputGEN/
+#NA_inputGEN_path=${kiloCraft}/NA_inputGEN/
 
-export NA_domain_path=${kiloCraft}/Daymet_NA_1D/
+#export NA_domain_path=${kiloCraft}/Daymet_NA_1D/
 
-export NA_domain="domain.lnd.Daymet_NA.1km.1d.c240521.nc"
+#export NA_domain="domain.lnd.Daymet_NA.1km.1d.c240521.nc"
 
-export AOI_case_name="NADaymet1M"
-export output_path=${kiloCraft}/NA_cases_data/${AOI_case_name}/domain_surfdata/
+#export AOI_case_name="NApoint5"
+#output_path=${kiloCraft}/NA_cases_data/${AOI_case_name}/domain_surfdata/
 
 cd ${NA_inputGEN_path}
  
@@ -21,9 +21,11 @@ cd ${NA_inputGEN_path}
 
 # create domain files
 
-export AOI_gridID_file=${AOI_case_name}_gridID.c240601.nc
-export AOI_gridfile_path=${kiloCraft}/NA_cases_data/${AOI_case_name}/domain_surfdata/
-export AOI_domain_output_path=${kiloCraft}/NA_cases_data/${AOI_case_name}/domain_surfdata/
+AOI_gridID_file=${AOI_case_name}_gridID.c${AOI_case_date}.nc
+#AOI_gridfile_path=${kiloCraft}/NA_cases_data/${AOI_case_name}/domain_surfdata/
+#AOI_domain_output_path=${kiloCraft}/NA_cases_data/${AOI_case_name}/domain_surfdata/
+AOI_gridfile_path=${output_path}
+AOI_domain_output_path=${output_path}
 
 echo "python3 NA_AOI_domainGENv2.py" ${AOI_gridfile_path} ${AOI_domain_output_path} ${AOI_gridID_file}
 python3 NA_AOI_domainGENv2.py ${AOI_gridfile_path} ${AOI_domain_output_path} ${AOI_gridID_file}
