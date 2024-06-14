@@ -21,13 +21,13 @@ def main():
     # Check the number of arguments
     if len(sys.argv) != 6  or sys.argv[1] == '--help':  
     # sys.argv includes the script name as the first argument
-        print("Example use: # python3 dup_surfdata.py ${NTimes} ${input_surfdate_path} ${input_surfdata} ${output_surfdata_path} ${output_surfdata} ")
+        print("Example use: # python3 dup_basecase_data.py ${NTimes} ${input_data_path} ${input_data} ${output_data_path} ${output_data} ")
         print(" <NTimes>: Number of duplication in the new dataset")
-        print(" <input_surfdata_path>: path to the base_surfdata_file")
-        print(" <input_surfdata>: the name of the base_surfdata_file")
-        print(" <output_surfdata_path>:  output directory to store the surfdata file")
-        print(" <output_surfdata>:  the name of the new surfdata")
-        print(" The code increases the surfdata file by the Ntimes")      
+        print(" <input_data_path>: path to the base_data_file")
+        print(" <input_data>: the name of the base_data_file")
+        print(" <output_data_path>:  output directory to store the data file")
+        print(" <output_data>:  the name of the new data")
+        print(" The code increases the basecase data file by the Ntimes")      
         exit(0)
     
     NTimes = int(args[0])

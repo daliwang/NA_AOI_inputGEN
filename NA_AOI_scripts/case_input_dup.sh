@@ -27,7 +27,7 @@ input_forcing_path=${refcase_root}/forcing/
 
 output_domain_path=${case_root}/domain_surfdata/
 output_surfdata_path=${output_domain_path}
-output_foring_path=${case_root}/forcing/
+output_forcing_path=${case_root}/forcing/
 
 mkdir ${case_root}
 mkdir ${output_domain_path}
