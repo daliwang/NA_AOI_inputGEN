@@ -31,17 +31,17 @@ def main():
         exit(0)
     
     NTimes = int(args[0])
-    input_domain_path = args[1]
-    input_domain = args[2]
-    output_domain_path = args[3]
-    output_domain = args[4]
+    input_file_path = args[1]
+    input_file = args[2]
+    output_file_path = args[3]
+    output_file = args[4]
 
     # read in the netcdf file
 
-    source = input_domain_path + '/' + input_domain
+    source = input_file_path + '/' + input_file
     src = nc.Dataset(source, 'r')
 
-    dest = output_domain_path + '/' + output_domain
+    dest = output_file_path + '/' + output_file
     os.system('rm '+ dest)
 
     # get the dimensions and variables
@@ -54,7 +54,7 @@ def main():
     # Create new variables
     dst_vars = {}
 
-    if 'surfdata' in source:
+    if 'surfdata' in input_file:
 
         # Copy the global attributes from the source to the target
         for name in src.ncattrs():
@@ -163,6 +163,8 @@ def main():
             print(count)
 
     else: # for domain and forcing data
+        
+        print("procesing "+ source)
 
         # Copy the global attributes from the source to the target
         for name in src.ncattrs():
@@ -175,27 +177,29 @@ def main():
                     name, (len(dimension) if not dimension.isunlimited() else None))
             else:
                 # Update the 'ni' dimension by NTimes
-                ni = dst.createDimension('ni', NTimes * (len(dimension)))
+                dst.createDimension('ni', NTimes * (len(dimension)))
+                print(dst.dimensions)
 
-        # create new varaibles
-        for name in src_vars:
-            if 'ni' in src.variables[name].dimensions:
-                data = src.variables[name][:]
-                #dst_data = np.repeat(data, NTimes, axis=src.variables[var].dimensions.index('ni'))
-                dst_data = np.copy(data)
-                for i in range(NTimes - 1):
-                    dst_data = np.concatenate((dst_data, data), axis = src.variables[name].dimensions.index('ni'))
-                
-                #dst_var = dst.createVariable(var, src.variables[var].datatype, src.variables[var].dimensions)
-                dst_var = dst.createVariable(name, src.variables[name].datatype, src.variables[name].dimensions)
-                
-                dst_var[:] = dst_data
-                dst_vars[name] = dst_var
-                print(name, dst_data.shape, dst_vars[name].dimensions)
-            else:
+        # Copy the variables from the source to the target
+        for name, variable in src.variables.items():
+            if (len(variable.dimensions) == 0 or variable.dimensions[-1] != 'ni'):
                 dst_var = dst.createVariable(name, src.variables[name].datatype, src.variables[name].dimensions)
                 dst_var[:] = src.variables[name][:]
                 dst_vars[name] = dst_var
+            else:
+                dst_var = dst.createVariable(name, variable.datatype, variable.dimensions[:-1]+('ni',))
+
+                print(name, dst[name].dimensions)
+                data = src.variables[name][:]
+
+                dst_data = np.copy(data)
+                for i in range(NTimes - 1):
+                    dst_data = np.concatenate((dst_data, data), axis = src.variables[name].dimensions.index('ni'))
+
+                dst_var[:] = dst_data
+                dst_vars[name] = dst_var
+                print(name, dst_data.shape, dst_vars[name].dimensions)
+
 
         # copy variable attributes
         for name in dst_vars:
