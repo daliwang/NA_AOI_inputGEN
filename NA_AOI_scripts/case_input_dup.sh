@@ -34,8 +34,8 @@ mkdir ${output_domain_path}
 mkdir ${output_forcing_path}
 mkdir ${case_root}/scripts
 
-output_domain=${EXPID}_domain.lnd.Daymet_NA.1km.1d.c${data_string}.nc
-output_surfdata=${EXPID}_surfdata.Daymet_NA.1km.1d.c${data_string}.nc
+output_domain=${EXPID}_domain.lnd.Daymet_NA.1km.1d.c240524.nc
+output_surfdata=${EXPID}_surfdata.Daymet_NA.1km.1d.c240524.nc
 
 cd ${case_root}/scripts
 cp ${refcase_root}/scripts/* .
@@ -45,5 +45,10 @@ cp ${refcase_root}/scripts/* .
 python3 dup_basecase_data.py ${NTimes} ${input_domain_path} ${input_domain} ${output_domain_path} ${output_domain}
 python3 dup_basecase_data.py ${NTimes} ${input_surfdata_path} ${input_surfdata} ${output_surfdata_path} ${output_surfdata}
 
-
+for file in ${input_forcing_path}/*clmforc*.nc
+do
+  input_forcing=$(basename $file)
+  echo "python3 dup_basecase_data.py" ${NTimes} ${input_forcing_path} ${input_forcing} ${output_forcing_path} ${input_forcing}
+  python3 dup_basecase_data.py ${NTimes} ${input_forcing_path} ${input_forcing} ${output_forcing_path} ${input_forcing}
+done
 
