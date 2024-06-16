@@ -58,8 +58,9 @@ python3 dup_basecase_data.py ${NTimes} ${input_surfdata_path} ${input_surfdata} 
 for file in ${input_forcing_path}/*clmforc*.nc
 do
   input_forcing=$(basename $file)
-  echo "python3 dup_basecase_data.py" ${NTimes} ${input_forcing_path} ${input_forcing} ${output_forcing_path} ${input_forcing} >> forcingdup.log.${AOI_case_date}
-  python3 dup_basecase_data.py ${NTimes} ${input_forcing_path} ${input_forcing} ${output_forcing_path} ${input_forcing}
+  output_forcing="${input_forcing/${BASEID}/${EXPID}}"
+  echo "python3 dup_basecase_data.py" ${NTimes} ${input_forcing_path} ${input_forcing} ${output_forcing_path} ${output_forcing} >> forcingdup.log.${AOI_case_date}
+  python3 dup_basecase_data.py ${NTimes} ${input_forcing_path} ${input_forcing} ${output_forcing_path} ${output_forcing} >> forcingdup.log.${AOI_case_date}
 done
 
 
