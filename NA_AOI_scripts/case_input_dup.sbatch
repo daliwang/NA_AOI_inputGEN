@@ -39,16 +39,18 @@ output_domain_path=${case_root}/domain_surfdata/
 output_surfdata_path=${output_domain_path}
 output_forcing_path=${case_root}/forcing/
 
+### user need to copy and modify the scripts first
+
 mkdir ${case_root}
 mkdir ${output_domain_path}
 mkdir ${output_forcing_path}
-mkdir ${case_root}/scripts
+#mkdir ${case_root}/scripts
 
 output_domain=${EXPID}_domain.lnd.Daymet_NA.1km.1d.c240524.nc
 output_surfdata=${EXPID}_surfdata.Daymet_NA.1km.1d.c240524.nc
 
 cd ${case_root}/scripts
-cp ${refcase_root}/scripts/* .
+#cp ${refcase_root}/scripts/* .
 
 # duplicate the domain and surfdata files
 
