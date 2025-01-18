@@ -42,8 +42,7 @@ for file in files:
         end_index = link_name.find(suffix)  # Find where ".1d" is located
 
         # Construct the new link_name
-        new_link_name = link_name[:start_index] + replacement + link_name[end_ind
-ex:]
+        new_link_name = link_name[:start_index] + replacement + link_name[end_index:]
 
         # Create a soft link in the target directory
         link_path = os.path.join(path, new_link_name)
