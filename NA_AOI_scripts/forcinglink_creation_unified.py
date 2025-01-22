@@ -58,4 +58,22 @@ for file in files:
         else:
             print(f"Link {link_path} already exists, skipping.")
 
+
+for file in files:
+    # Check if 'domain' is in the file name
+    if '_domain.lnd' in file:
+        # Construct the new link_name
+        new_link_name = "domain.lnd.Daymet.km.1d.nc"
+        # Create a soft link in the target directory
+        link_path = os.path.join(path, new_link_name)
+
+        # Only create the link if it does not already exist
+        if not os.path.exists(link_path):
+            command = f'ln -s "{file}" "{link_path}"'
+            print(command)
+            os.system(command)
+        else:
+            print(f"Link {link_path} already exists, skipping.")
+
+
 print("Soft links created successfully.")
